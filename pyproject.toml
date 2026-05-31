@@ -10,6 +10,7 @@ members = [
     "packages/evals",
     "packages/cli",
     "packages/connectors",
+    "packages/surface-api",
 ]
 
 [tool.uv.sources]
@@ -21,6 +22,7 @@ houndex-storage-supabase = { workspace = true }
 houndex-evals = { workspace = true }
 houndex-cli = { workspace = true }
 houndex-connectors = { workspace = true }
+houndex-surface-api = { workspace = true }
 
 [dependency-groups]
 dev = [
@@ -49,4 +51,5 @@ extra-paths = [
     "packages/evals/src",
     "packages/cli/src",
     "packages/connectors/src",
+    "packages/surface-api/src",
 ]
