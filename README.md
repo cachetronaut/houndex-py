@@ -109,7 +109,7 @@ Verification in Houndex is evidence-relative. It can tell you whether an answer 
 | `houndex-storage-convex` | Active | Convex client adapter (vector index + tenant-scoped search action) |
 | `houndex-evals` | Active | Regression harness: fixture schema, envelope rubric scoring, reports |
 | `houndex-cli` | Active | `init`, `doctor`, `ingest`, `ask`, `verify`, `eval` over a configured adapter |
-| `houndex-connectors` | Active (MVP) | Deterministic source connectors; currently file ingestion |
+| `houndex-connectors` | Active (MVP) | Deterministic source connectors for files and explicit web URLs |
 | `houndex-surface-api` | Planned | Optional FastAPI service exposing verify, ask, and ingest over HTTP |
 
 The companion TypeScript repository tracks the same contracts. Shared parity
@@ -185,8 +185,7 @@ Shipped, in both TypeScript and Python:
 
 Planned, in roughly this order:
 
-1. Expand `houndex-connectors` beyond the file connector with web pages, GitHub
-   repositories, and docs.
+1. Expand `houndex-connectors` with GitHub repositories and docs.
 2. `houndex-surface-api` — an optional FastAPI service that exposes `verify`,
    `ask`, and `ingest` over HTTP, for verification-as-a-service and pipelines
    that call the engine out of process. This is the Python surface; the Next.js
