@@ -1,0 +1,95 @@
+{
+  "claimId": [
+    {
+      "input": {
+        "tenantId": "primary",
+        "subject": "Acme",
+        "claimText": "Ships a hosted control plane",
+        "sourceUrl": "https://example.com/docs/control-plane"
+      },
+      "expected": "53b138833aaf6709"
+    },
+    {
+      "input": {
+        "tenantId": "primary",
+        "subject": "  acme ",
+        "claimText": "  Ships a   hosted CONTROL plane ",
+        "sourceUrl": "http://example.com/docs/control-plane/?utm_source=x#section"
+      },
+      "expected": "53b138833aaf6709"
+    },
+    {
+      "input": {
+        "tenantId": "secondary",
+        "subject": "Acme",
+        "claimText": "Ships a hosted control plane",
+        "sourceUrl": "https://example.com/docs/control-plane"
+      },
+      "expected": "48a01f47af6f598e"
+    }
+  ],
+  "edgeIdempotencyKey": [
+    {
+      "input": {
+        "srcId": "claim:0000000000000001",
+        "dstId": "claim:0000000000000002",
+        "kind": "reinforces"
+      },
+      "expected": "3db366f5f2cd2eeb"
+    },
+    {
+      "input": {
+        "srcId": "claim:0000000000000001",
+        "dstId": "claim:0000000000000002",
+        "kind": "contradicts"
+      },
+      "expected": "15b827f8f2ea612c"
+    }
+  ],
+  "canonicalizeUrl": [
+    {
+      "input": "HTTPS://Example.COM/Docs/",
+      "expected": "https://example.com/Docs"
+    },
+    {
+      "input": "https://example.com/a?b=2&utm_source=x&a=1",
+      "expected": "https://example.com/a?a=1&b=2"
+    },
+    {
+      "input": "example.com/a",
+      "expected": "https://example.com/a"
+    },
+    {
+      "input": "http://example.com:80/a/",
+      "expected": "http://example.com/a"
+    }
+  ],
+  "canonicalJson": [
+    {
+      "input": {
+        "b": 1,
+        "a": {
+          "y": 2,
+          "x": 3
+        },
+        "z": [3, 1, 2]
+      },
+      "expected": "{\"a\":{\"x\":3,\"y\":2},\"b\":1,\"z\":[3,1,2]}"
+    },
+    {
+      "input": {
+        "tenantId": "primary",
+        "claimId": "abcdef0123456789",
+        "subject": "Acme",
+        "category": "security",
+        "polarity": "positive",
+        "nested": {
+          "c": true,
+          "a": null,
+          "b": "x"
+        }
+      },
+      "expected": "{\"category\":\"security\",\"claimId\":\"abcdef0123456789\",\"nested\":{\"a\":null,\"b\":\"x\",\"c\":true},\"polarity\":\"positive\",\"subject\":\"Acme\",\"tenantId\":\"primary\"}"
+    }
+  ]
+}

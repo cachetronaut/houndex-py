@@ -1,0 +1,46 @@
+# Virtual uv workspace root. Members are added here as they are implemented;
+# stub package directories are intentionally not yet members.
+[tool.uv.workspace]
+members = [
+    "packages/core",
+    "packages/pipeline",
+    "packages/storage-local",
+    "packages/storage-convex",
+    "packages/storage-supabase",
+    "packages/evals",
+]
+
+[tool.uv.sources]
+houndex-core = { workspace = true }
+houndex-pipeline = { workspace = true }
+houndex-storage-local = { workspace = true }
+houndex-storage-convex = { workspace = true }
+houndex-storage-supabase = { workspace = true }
+houndex-evals = { workspace = true }
+
+[dependency-groups]
+dev = [
+    "pytest>=8",
+    "ruff>=0.6",
+    "ty>=0.0.1a8",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+
+[tool.pytest.ini_options]
+testpaths = ["packages"]
+
+[tool.ty.environment]
+extra-paths = [
+    "packages/core/src",
+    "packages/pipeline/src",
+    "packages/storage-local/src",
+    "packages/storage-convex/src",
+    "packages/storage-supabase/src",
+    "packages/evals/src",
+]
