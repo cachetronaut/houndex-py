@@ -17,6 +17,9 @@ results are reproducible. Mirrors the TypeScript `@houndex/pipeline` package.
 - **Orchestrator** — `run_ingestion` ties the steps together over injected
   provider ports (scrape, extract, embed) and a `StorageAdapter`. The
   dependencies are parameters, so you choose the providers and storage.
+- **Processing bridge** — `discover_pages` and `process_pages` expose the
+  discovery and processing halves separately, so connector packages can reuse
+  the deterministic classify/chunk/extract/embed/sink path.
 
 ## Usage
 

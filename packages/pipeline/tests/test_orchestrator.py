@@ -11,8 +11,10 @@ from houndex_pipeline import (
     ExtractionOutcome,
     IngestionDeps,
     IngestionInput,
+    ProcessDeps,
     SinkResult,
     SourceTierClassifier,
+    process_pages,
     run_ingestion,
 )
 
@@ -100,3 +102,101 @@ def test_counts_deduped_sink() -> None:
     result = asyncio.run(run_ingestion(IngestionInput(subject="Acme"), _make_deps(created=False)))
     assert result.claims_created == 0
     assert result.claims_deduped == 1
+
+
+def _make_process_deps(*, created: bool = True) -> ProcessDeps:
+    async def extract(input: ExtractInput) -> ExtractionOutcome:
+        claim = _base_claim()
+        return ExtractionOutcome(
+            kept=[
+                ExtractedClaimWithContext(
+                    claim=claim.claim,
+                    subject=input.subject,
+                    source_url=input.source_url,
+                    source_tier=input.source_tier,
+                )
+            ],
+            dropped=[],
+        )
+
+    async def sink(
+        _claim: ExtractedClaimWithContext, _embedding: Sequence[float] | None
+    ) -> SinkResult:
+        return SinkResult(claim_id="id1", created=created)
+
+    return ProcessDeps(classifier=SourceTierClassifier(), extract=extract, sink=sink)
+
+
+def test_process_pages_dedupes_identical_page_text() -> None:
+    pages = [
+        ScrapedPage(source_url="https://example.com/a", title="A", text="body"),
+        ScrapedPage(source_url="https://example.com/b", title="B", text="body"),
+    ]
+    result = asyncio.run(process_pages(pages, IngestionInput(subject="Acme"), _make_process_deps()))
+    assert result.pages_scraped == 1
+    assert result.claims_created == 1
+
+
+def test_process_pages_survives_extract_failure() -> None:
+    failed: list[str] = []
+
+    async def extract(input: ExtractInput) -> ExtractionOutcome:
+        if "/bad" in input.source_url:
+            raise TypeError("extract failed")
+        return ExtractionOutcome(kept=[_base_claim()], dropped=[])
+
+    async def sink(
+        _claim: ExtractedClaimWithContext, _embedding: Sequence[float] | None
+    ) -> SinkResult:
+        return SinkResult(claim_id="id1", created=True)
+
+    deps = ProcessDeps(
+        classifier=SourceTierClassifier(),
+        extract=extract,
+        sink=sink,
+        on_page_error=lambda source_url, _error: failed.append(source_url),
+    )
+    pages = [
+        ScrapedPage(source_url="https://example.com/good", title="Good", text="good body"),
+        ScrapedPage(source_url="https://example.com/bad", title="Bad", text="bad body"),
+    ]
+
+    result = asyncio.run(process_pages(pages, IngestionInput(subject="Acme"), deps))
+
+    assert result.pages_scraped == 2
+    assert result.pages_failed == 1
+    assert result.claims_created == 1
+    assert failed == ["https://example.com/bad"]
+
+
+def test_process_pages_passes_embedding_to_sink() -> None:
+    embeddings: list[list[float] | None] = []
+
+    class Embedder:
+        @property
+        def dimension(self) -> int:
+            return 2
+
+        async def embed(self, texts: Sequence[str]) -> list[list[float]]:
+            return [[0.25, 0.75] for _text in texts]
+
+    async def sink(
+        _claim: ExtractedClaimWithContext, embedding: Sequence[float] | None
+    ) -> SinkResult:
+        embeddings.append(list(embedding) if embedding is not None else None)
+        return SinkResult(claim_id="id1", created=False)
+
+    deps = _make_process_deps(created=False)
+    deps.embed = Embedder()
+    deps.sink = sink
+    result = asyncio.run(
+        process_pages(
+            [ScrapedPage(source_url="https://example.com/a", title="A", text="body")],
+            IngestionInput(subject="Acme"),
+            deps,
+        )
+    )
+
+    assert result.claims_created == 0
+    assert result.claims_deduped == 1
+    assert embeddings == [[0.25, 0.75]]

@@ -8,10 +8,10 @@ whole sequence is testable offline with in-memory fakes. Mirrors the TypeScript
 from __future__ import annotations
 
 import asyncio
-from collections.abc import Awaitable, Callable
+from collections.abc import Awaitable, Callable, Sequence
 from dataclasses import dataclass, field
 
-from houndex_core.providers import Embedder, ScrapedPage, Scraper, SearchProvider
+from houndex_core.providers import Embedder, ScrapedPage, Scraper, SearchProvider, SearchResult
 from houndex_core.schemas import ExtractedClaim, SearchPlan, SourceTier
 
 from .chunker import chunk_text
@@ -57,6 +57,26 @@ class SinkResult:
 
 
 @dataclass
+class DiscoverDeps:
+    plan: Callable[[IngestionInput], Awaitable[SearchPlan]]
+    search: SearchProvider
+    scrape: Scraper
+    max_results_per_query: int = 5
+    max_pages: int = _DEFAULT_MAX_PAGES
+    on_page_error: Callable[[str, BaseException], None] | None = None
+
+
+@dataclass
+class ProcessDeps:
+    classifier: SourceTierClassifier
+    extract: Callable[[ExtractInput], Awaitable[ExtractionOutcome]]
+    sink: Callable[[ExtractedClaimWithContext, list[float] | None], Awaitable[SinkResult]]
+    embed: Embedder | None = None
+    extraction_concurrency: int = _DEFAULT_EXTRACTION_CONCURRENCY
+    on_page_error: Callable[[str, BaseException], None] | None = None
+
+
+@dataclass
 class IngestionDeps:
     plan: Callable[[IngestionInput], Awaitable[SearchPlan]]
     search: SearchProvider
@@ -82,18 +102,16 @@ class IngestionResult:
     scraped_hashes: list[str] = field(default_factory=list)
 
 
-async def run_ingestion(input: IngestionInput, deps: IngestionDeps) -> IngestionResult:
+async def discover_pages(input: IngestionInput, deps: DiscoverDeps) -> list[ScrapedPage]:
     plan = await deps.plan(input)
 
     # Search every planned query, then dedupe by canonical URL.
-    all_results = []
+    all_results: list[SearchResult] = []
     for query in plan.queries:
         all_results.extend(await deps.search.search(query.query, deps.max_results_per_query))
     # Cap the candidate set *before* scraping. URL-dedupe first (cheap,
     # deterministic), then take the head — search providers return best-first.
     unique = dedupe_by_url(all_results)[: deps.max_pages]
-
-    result = IngestionResult()
 
     async def _safe_scrape(url: str) -> ScrapedPage | None:
         try:
@@ -104,21 +122,25 @@ async def run_ingestion(input: IngestionInput, deps: IngestionDeps) -> Ingestion
             return None
 
     scraped = await asyncio.gather(*(_safe_scrape(source.url) for source in unique))
+    return [page for page in scraped if page is not None]
 
+
+async def process_pages(
+    pages: Sequence[ScrapedPage], input: IngestionInput, deps: ProcessDeps
+) -> IngestionResult:
     # Content-hash dedupe runs sequentially so the kept set is deterministic
     # regardless of scrape completion order (identical page text kept once).
+    result = IngestionResult()
     seen_hashes: set[str] = set()
-    pages: list[ScrapedPage] = []
-    for page in scraped:
-        if page is None:
-            continue
+    unique_pages: list[ScrapedPage] = []
+    for page in pages:
         digest = content_hash(page.text)
         if digest in seen_hashes:
             continue
         seen_hashes.add(digest)
         result.pages_scraped += 1
         result.scraped_hashes.append(digest)
-        pages.append(page)
+        unique_pages.append(page)
 
     # Extraction is the model-bound bottleneck. Process pages in concurrent
     # batches; each page's classify + chunk + embed + extract is independent.
@@ -151,8 +173,8 @@ async def run_ingestion(input: IngestionInput, deps: IngestionDeps) -> Ingestion
         result.claims_dropped += len(outcome.dropped)
         return (outcome.kept, embedding)
 
-    for offset in range(0, len(pages), concurrency):
-        batch = pages[offset : offset + concurrency]
+    for offset in range(0, len(unique_pages), concurrency):
+        batch = unique_pages[offset : offset + concurrency]
         for outcome in await asyncio.gather(*(_process(page) for page in batch)):
             if outcome is not None:
                 sinkable.append(outcome)
@@ -168,3 +190,29 @@ async def run_ingestion(input: IngestionInput, deps: IngestionDeps) -> Ingestion
                 result.claims_deduped += 1
 
     return result
+
+
+async def run_ingestion(input: IngestionInput, deps: IngestionDeps) -> IngestionResult:
+    pages = await discover_pages(
+        input,
+        DiscoverDeps(
+            plan=deps.plan,
+            search=deps.search,
+            scrape=deps.scrape,
+            max_results_per_query=deps.max_results_per_query,
+            max_pages=deps.max_pages,
+            on_page_error=deps.on_page_error,
+        ),
+    )
+    return await process_pages(
+        pages,
+        input,
+        ProcessDeps(
+            classifier=deps.classifier,
+            extract=deps.extract,
+            sink=deps.sink,
+            embed=deps.embed,
+            extraction_concurrency=deps.extraction_concurrency,
+            on_page_error=deps.on_page_error,
+        ),
+    )

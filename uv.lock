@@ -5,6 +5,7 @@ requires-python = ">=3.11"
 [manifest]
 members = [
     "houndex-cli",
+    "houndex-connectors",
     "houndex-core",
     "houndex-evals",
     "houndex-pipeline",
@@ -414,6 +415,21 @@ requires-dist = [
     { name = "typer", specifier = ">=0.12" },
 ]
 provides-extras = ["supabase", "convex"]
+
+[[package]]
+name = "houndex-connectors"
+version = "0.1.0"
+source = { editable = "packages/connectors" }
+dependencies = [
+    { name = "houndex-core" },
+    { name = "houndex-pipeline" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "houndex-core", editable = "packages/core" },
+    { name = "houndex-pipeline", editable = "packages/pipeline" },
+]
 
 [[package]]
 name = "houndex-core"
