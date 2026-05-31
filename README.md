@@ -1,5 +1,9 @@
 # Houndex Python
 
+<p align="center">
+  <img src="./docs/assets/houndex.png" alt="Houndex logo" width="260" />
+</p>
+
 **Houndex is a last-mile knowledge framework for building source-backed AI systems.**
 
 Most RAG tools help you retrieve context. Houndex focuses on what happens after retrieval: turning sources, claims, evidence, citations, verification results, and provenance into typed artifacts your application can trust, inspect, store, and test.
