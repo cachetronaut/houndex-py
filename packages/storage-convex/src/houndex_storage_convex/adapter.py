@@ -43,6 +43,7 @@ class ConvexClient(Protocol):
 
     def query(self, name: str, args: Mapping[str, Any]) -> Any: ...
     def mutation(self, name: str, args: Mapping[str, Any]) -> Any: ...
+    def action(self, name: str, args: Mapping[str, Any]) -> Any: ...
 
 
 def _tenant_arg(tenant: TenantContext) -> dict[str, Any]:
@@ -97,6 +98,9 @@ class ConvexStorageAdapter:
 
     async def _query(self, name: str, args: Mapping[str, Any]) -> Any:
         return await asyncio.to_thread(self._client.query, name, args)
+
+    async def _action(self, name: str, args: Mapping[str, Any]) -> Any:
+        return await asyncio.to_thread(self._client.action, name, args)
 
     async def ensure_tenant(self, input: EnsureTenantInput) -> None:
         await self._mutation("tenants:ensureTenant", {"tenant": _tenant_arg(input.tenant)})
@@ -183,6 +187,18 @@ class ConvexStorageAdapter:
         return UpsertResult(id=result["id"], created=result["created"])
 
     async def search_claims(self, input: ClaimSearchInput) -> list[Claim]:
+        if input.query_vector is not None:
+            rows = await self._action(
+                "claims:vectorSearchClaims",
+                {
+                    "tenant": _tenant_arg(input.tenant),
+                    "queryVector": list(input.query_vector),
+                    "subject": input.subject,
+                    "category": input.category,
+                    "limit": input.limit,
+                },
+            )
+            return [_claim_from_row(row) for row in rows]
         rows = await self._query(
             "claims:searchClaims",
             {

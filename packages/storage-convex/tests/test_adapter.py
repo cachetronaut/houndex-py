@@ -31,6 +31,10 @@ class FakeConvexClient:
         self.calls.append(("query", name, args))
         return self.responses.get(name)
 
+    def action(self, name: str, args: Mapping[str, Any]) -> Any:
+        self.calls.append(("action", name, args))
+        return self.responses.get(name)
+
 
 def _claim(**overrides: Any) -> Claim:
     subject = overrides.pop("subject", "Acme")
@@ -128,6 +132,25 @@ def test_search_claims_maps_rows() -> None:
     assert rows[0].subject == "Acme"
     _, _, args = client.calls[-1]
     assert args["subject"] == "Acme"
+
+
+def test_vector_search_routes_to_action() -> None:
+    claim = _claim()
+    client = FakeConvexClient()
+    client.responses["claims:vectorSearchClaims"] = [_camel_row(claim)]
+    adapter = ConvexStorageAdapter(client)
+
+    rows = asyncio.run(
+        adapter.search_claims(
+            ClaimSearchInput(tenant=tenant_primary(), query_vector=[0.1, 0.2, 0.3], limit=5)
+        )
+    )
+    assert len(rows) == 1
+    assert rows[0].subject == "Acme"
+    kind, name, args = client.calls[-1]
+    assert (kind, name) == ("action", "claims:vectorSearchClaims")
+    assert args["queryVector"] == [0.1, 0.2, 0.3]
+    assert args["limit"] == 5
 
 
 def test_create_run_maps_row() -> None:
