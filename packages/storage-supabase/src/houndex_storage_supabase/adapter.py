@@ -1,10 +1,11 @@
 """Supabase (Postgres + pgvector) client adapter implementing ``StorageAdapter``.
 
 A thin layer over the synchronous Supabase Python client, bridged to the async
-contract with ``asyncio.to_thread``. Targets the SQL schema shipped by the
-TypeScript ``houndex/storage-supabase`` package. Every query filters by
-``tenant_id``. Because the Python core models and the Postgres columns are both
-snake_case, row <-> model mapping is a direct ``model_dump`` / ``model_validate``.
+contract with ``asyncio.to_thread``. Targets the schema in the repo's
+``supabase/migrations/`` (shared with the TypeScript adapter). Every query
+filters by ``tenant_id``. Because the Python core models and the Postgres columns
+are both snake_case, row <-> model mapping is a direct
+``model_dump`` / ``model_validate``.
 """
 
 from __future__ import annotations
