@@ -61,12 +61,14 @@ def _claim_content(**overrides: Any) -> dict[str, Any]:
 
 
 def test_embedder_deterministic_and_unit_length() -> None:
-    e = SyntheticEmbedder(DIM)
-    a = e.embed("hello world")
-    assert a == e.embed("hello world")
-    assert len(a) == DIM
-    assert math.isclose(math.sqrt(sum(x * x for x in a)), 1.0, abs_tol=1e-9)
-    assert e.embed("different") != a
+    embedder = SyntheticEmbedder(DIM)
+    vector = embedder.embed("hello world")
+    assert vector == embedder.embed("hello world")
+    assert len(vector) == DIM
+    assert math.isclose(
+        math.sqrt(sum(component * component for component in vector)), 1.0, abs_tol=1e-9
+    )
+    assert embedder.embed("different") != vector
 
 
 def test_embedder_matches_typescript() -> None:
@@ -104,15 +106,15 @@ async def _ready(adapter: LocalStorageAdapter) -> LocalStorageAdapter:
 
 def test_ingest_then_ask() -> None:
     async def run() -> None:
-        d = _deps()
+        deps = _deps()
         res = await ingest(
-            d,
+            deps,
             claims=[_claim_content(), _claim_content(claim_text="Encrypts at rest")],
             as_json=True,
         )
         assert json.loads(res.output) == {"created": 2, "skipped": 0, "total": 2}
 
-        answered = await ask(d, query="audit log", limit=5, as_json=False)
+        answered = await ask(deps, query="audit log", limit=5, as_json=False)
         assert answered.code == 0
         assert "verdict: PASS" in answered.output
         assert "citations:" in answered.output
@@ -122,9 +124,9 @@ def test_ingest_then_ask() -> None:
 
 def test_ingest_idempotent() -> None:
     async def run() -> None:
-        d = _deps()
-        await ingest(d, claims=[_claim_content()], as_json=False)
-        again = await ingest(d, claims=[_claim_content()], as_json=True)
+        deps = _deps()
+        await ingest(deps, claims=[_claim_content()], as_json=False)
+        again = await ingest(deps, claims=[_claim_content()], as_json=True)
         assert json.loads(again.output)["skipped"] == 1
 
     asyncio.run(run())
@@ -132,14 +134,14 @@ def test_ingest_idempotent() -> None:
 
 def test_verify_pass_fail_invalid_and_self_contained() -> None:
     async def run() -> None:
-        d = _deps()
-        tenant = d.config.tenant_context()
+        deps = _deps()
+        tenant = deps.config.tenant_context()
         claim = build_claim(tenant.tenant_id, _claim_content())
-        await d.adapter.ensure_tenant(EnsureTenantInput(tenant=tenant))
-        await d.adapter.upsert_claim(UpsertClaimInput(tenant=tenant, claim=claim))
+        await deps.adapter.ensure_tenant(EnsureTenantInput(tenant=tenant))
+        await deps.adapter.upsert_claim(UpsertClaimInput(tenant=tenant, claim=claim))
 
         good = build_answer_envelope(tenant.tenant_id, "q", [claim], 1)
-        assert (await verify(d, envelope=good, claim_ids=None, as_json=False)).code == 0
+        assert (await verify(deps, envelope=good, claim_ids=None, as_json=False)).code == 0
 
         hallucinated = OutputEnvelope[dict[str, Any]](
             tenant_id=tenant.tenant_id,
@@ -147,10 +149,10 @@ def test_verify_pass_fail_invalid_and_self_contained() -> None:
             trace=[TraceEntry(claim_id="deadbeefdeadbeef", mechanism="guess")],
             payload={},
         )
-        assert (await verify(d, envelope=hallucinated, claim_ids=None, as_json=False)).code == 1
+        assert (await verify(deps, envelope=hallucinated, claim_ids=None, as_json=False)).code == 1
 
         assert (
-            await verify(d, envelope={"not": "envelope"}, claim_ids=None, as_json=False)
+            await verify(deps, envelope={"not": "envelope"}, claim_ids=None, as_json=False)
         ).code == 1
 
         # self-contained universe: passes even against an empty store
@@ -174,20 +176,20 @@ def test_verify_pass_fail_invalid_and_self_contained() -> None:
 
 def test_eval_threshold_gate() -> None:
     async def run() -> None:
-        d = _deps()
-        tenant = d.config.tenant_context()
+        deps = _deps()
+        tenant = deps.config.tenant_context()
         claim = build_claim(tenant.tenant_id, _claim_content())
         envelope = build_answer_envelope(tenant.tenant_id, "q", [claim], 1)
         fixture = EvalFixture(name="grounded", description="cites a known claim")
         cases = [(fixture, envelope)]
 
         passed = await evaluate(
-            d, cases=cases, claim_ids=[claim.claim_id], threshold=0.5, as_json=True
+            deps, cases=cases, claim_ids=[claim.claim_id], threshold=0.5, as_json=True
         )
         assert passed.code == 0
         assert json.loads(passed.output)["aggregate"] >= 0.5
 
-        failed = await evaluate(d, cases=cases, claim_ids=[], threshold=0.99, as_json=True)
+        failed = await evaluate(deps, cases=cases, claim_ids=[], threshold=0.99, as_json=True)
         assert failed.code == 1
 
     asyncio.run(run())

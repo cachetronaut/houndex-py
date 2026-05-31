@@ -31,10 +31,11 @@ def format_report(results: Sequence[FixtureResult]) -> str:
         "| --- | --- | --- | --- | --- | --- |",
     ]
     for result in results:
-        s = result.score
-        check = "✅" if s.passed else "❌"
+        score = result.score
+        check = "✅" if score.passed else "❌"
         lines.append(
-            f"| {result.name} | {check} | {_fmt(s.total)} | {_fmt(s.trace_resolution)} "
-            f"| {_fmt(s.envelope_validity)} | {_fmt(s.determinism)} |"
+            f"| {result.name} | {check} | {_fmt(score.total)} | "
+            f"{_fmt(score.trace_resolution)} | {_fmt(score.envelope_validity)} | "
+            f"{_fmt(score.determinism)} |"
         )
     return "\n".join(lines) + "\n"

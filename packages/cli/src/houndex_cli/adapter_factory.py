@@ -8,6 +8,7 @@ from __future__ import annotations
 import importlib
 import os
 from collections.abc import Mapping
+from types import ModuleType
 
 from houndex_core.storage import StorageAdapter
 from houndex_storage_local import LocalStorageAdapter
@@ -51,7 +52,7 @@ async def create_adapter(
     return adapters.ConvexStorageAdapter(convex.ConvexClient(url))
 
 
-def _import(module: str, adapter: str):  # noqa: ANN202 — third-party module, typed Any
+def _import(module: str, adapter: str) -> ModuleType:
     try:
         return importlib.import_module(module)
     except ImportError as err:

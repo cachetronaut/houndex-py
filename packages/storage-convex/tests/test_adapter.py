@@ -61,20 +61,20 @@ def _claim(**overrides: Any) -> Claim:
     return Claim.model_validate(data)
 
 
-def _camel_row(c: Claim) -> dict[str, Any]:
+def _camel_row(claim: Claim) -> dict[str, Any]:
     return {
-        "tenantId": c.tenant_id,
-        "claimId": c.claim_id,
-        "subject": c.subject,
-        "category": c.category,
-        "polarity": c.polarity,
-        "scope": c.scope,
-        "claimText": c.claim_text,
-        "evidenceText": c.evidence_text,
-        "confidence": c.confidence,
-        "sourceUrl": c.source_url,
-        "sourceTier": c.source_tier,
-        "extractedAt": c.extracted_at,
+        "tenantId": claim.tenant_id,
+        "claimId": claim.claim_id,
+        "subject": claim.subject,
+        "category": claim.category,
+        "polarity": claim.polarity,
+        "scope": claim.scope,
+        "claimText": claim.claim_text,
+        "evidenceText": claim.evidence_text,
+        "confidence": claim.confidence,
+        "sourceUrl": claim.source_url,
+        "sourceTier": claim.source_tier,
+        "extractedAt": claim.extracted_at,
     }
 
 

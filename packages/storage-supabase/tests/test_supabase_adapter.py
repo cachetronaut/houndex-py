@@ -82,24 +82,32 @@ class _Query:
             rows.append(self._payload)
             return _Resp(None)
         if self._mode == "upsert":
-            cols = [c.strip() for c in (self._on_conflict or "").split(",") if c.strip()]
-            idx = next(
+            conflict_columns = [
+                column.strip() for column in (self._on_conflict or "").split(",") if column.strip()
+            ]
+            existing_index = next(
                 (
-                    i
-                    for i, e in enumerate(rows)
-                    if cols and all(e.get(c) == self._payload.get(c) for c in cols)
+                    index
+                    for index, existing_row in enumerate(rows)
+                    if conflict_columns
+                    and all(
+                        existing_row.get(column) == self._payload.get(column)
+                        for column in conflict_columns
+                    )
                 ),
                 -1,
             )
-            if idx == -1:
+            if existing_index == -1:
                 rows.append(self._payload)
             elif not self._ignore:
-                rows[idx] = self._payload
+                rows[existing_index] = self._payload
             return _Resp(None)
-        matched = [r for r in rows if all(r.get(c) == v for c, v in self._filters)]
+        matched = [
+            row for row in rows if all(row.get(column) == value for column, value in self._filters)
+        ]
         if self._mode == "update":
-            for r in matched:
-                r.update(self._payload)
+            for row in matched:
+                row.update(self._payload)
             return _Resp(matched)
         if self._limit is not None:
             matched = matched[: self._limit]

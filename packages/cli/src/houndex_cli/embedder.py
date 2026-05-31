@@ -19,10 +19,10 @@ _MASK = 0xFFFFFFFF
 
 
 def _fnv1a32(text: str) -> int:
-    h = _FNV_OFFSET
+    hash_value = _FNV_OFFSET
     for byte in text.encode("utf-8"):
-        h = ((h ^ byte) * _FNV_PRIME) & _MASK
-    return h
+        hash_value = ((hash_value ^ byte) * _FNV_PRIME) & _MASK
+    return hash_value
 
 
 class SyntheticEmbedder:

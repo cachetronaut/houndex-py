@@ -20,13 +20,13 @@ _VECTORS = json.loads((Path(__file__).parent / "core-vectors.json").read_text())
 
 @pytest.mark.parametrize("case", _VECTORS["claimId"])
 def test_claim_id(case: dict[str, Any]) -> None:
-    i = case["input"]
+    case_input = case["input"]
     assert (
         compute_claim_id(
-            tenant_id=i["tenantId"],
-            subject=i["subject"],
-            claim_text=i["claimText"],
-            source_url=i["sourceUrl"],
+            tenant_id=case_input["tenantId"],
+            subject=case_input["subject"],
+            claim_text=case_input["claimText"],
+            source_url=case_input["sourceUrl"],
         )
         == case["expected"]
     )
@@ -34,9 +34,11 @@ def test_claim_id(case: dict[str, Any]) -> None:
 
 @pytest.mark.parametrize("case", _VECTORS["edgeIdempotencyKey"])
 def test_edge_idempotency_key(case: dict[str, Any]) -> None:
-    i = case["input"]
+    case_input = case["input"]
     assert (
-        edge_idempotency_key(src_id=i["srcId"], dst_id=i["dstId"], kind=i["kind"])
+        edge_idempotency_key(
+            src_id=case_input["srcId"], dst_id=case_input["dstId"], kind=case_input["kind"]
+        )
         == (case["expected"])
     )
 

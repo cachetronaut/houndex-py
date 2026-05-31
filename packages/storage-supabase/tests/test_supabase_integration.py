@@ -26,6 +26,7 @@ import asyncio
 import math
 import os
 import uuid
+from typing import Any
 
 import pytest
 from houndex_core import compute_claim_id
@@ -57,7 +58,7 @@ pytestmark = pytest.mark.skipif(
 )
 
 
-def _client():  # noqa: ANN202 — supabase Client type only available when extra is installed
+def _client() -> Any:
     create_client = pytest.importorskip("supabase").create_client
     assert _URL is not None and _KEY is not None
     return create_client(_URL, _KEY)
@@ -73,9 +74,11 @@ def _tenant(suffix: str) -> TenantContext:
 
 def _unit_vector(seed: int) -> list[float]:
     """A deterministic L2-normalized vector that leans on dimension ``seed``."""
-    raw = [1.0 if i == seed % _EMBEDDING_DIM else 0.01 for i in range(_EMBEDDING_DIM)]
-    norm = math.sqrt(sum(x * x for x in raw))
-    return [x / norm for x in raw]
+    components = [
+        1.0 if index == seed % _EMBEDDING_DIM else 0.01 for index in range(_EMBEDDING_DIM)
+    ]
+    magnitude = math.sqrt(sum(component * component for component in components))
+    return [component / magnitude for component in components]
 
 
 def _make_claim(
@@ -149,7 +152,7 @@ def test_vector_search_orders_by_cosine_distance() -> None:
         results = await adapter.search_claims(
             ClaimSearchInput(tenant=tenant, query_vector=_unit_vector(0), limit=2)
         )
-        assert [c.claim_id for c in results] == [near.claim_id, far.claim_id]
+        assert [claim.claim_id for claim in results] == [near.claim_id, far.claim_id]
 
     asyncio.run(run())
 

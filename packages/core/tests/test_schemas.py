@@ -58,10 +58,10 @@ def test_taxonomy() -> None:
 
 
 def test_edge_idempotency_key_stability() -> None:
-    a = edge_idempotency_key(src_id="claim:1", dst_id="claim:2", kind="reinforces")
-    b = edge_idempotency_key(src_id="claim:1", dst_id="claim:2", kind="reinforces")
-    assert a == b
-    assert edge_idempotency_key(src_id="claim:1", dst_id="claim:2", kind="contradicts") != a
+    first_key = edge_idempotency_key(src_id="claim:1", dst_id="claim:2", kind="reinforces")
+    second_key = edge_idempotency_key(src_id="claim:1", dst_id="claim:2", kind="reinforces")
+    assert first_key == second_key
+    assert edge_idempotency_key(src_id="claim:1", dst_id="claim:2", kind="contradicts") != first_key
 
 
 def test_envelope_defaults() -> None:
