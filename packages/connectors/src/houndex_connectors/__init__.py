@@ -3,6 +3,12 @@
 from __future__ import annotations
 
 from .connector import Connector, IngestConnectorOptions, SourceDraft, ingest_connector
+from .docs_connector import (
+    DocsConnector,
+    extract_index_urls,
+    extract_sitemap_urls,
+    filter_doc_urls,
+)
 from .file_connector import FileConnector
 from .github_connector import (
     DefaultGitHubClient,
@@ -24,6 +30,7 @@ __all__ = [
     "Connector",
     "DefaultFetcher",
     "DefaultGitHubClient",
+    "DocsConnector",
     "Fetcher",
     "FetchResponse",
     "FileConnector",
@@ -36,5 +43,8 @@ __all__ = [
     "SourceDraft",
     "WebConnector",
     "WebConnectorError",
+    "extract_index_urls",
+    "extract_sitemap_urls",
+    "filter_doc_urls",
     "ingest_connector",
 ]
