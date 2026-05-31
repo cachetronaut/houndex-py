@@ -159,9 +159,7 @@ async def evaluate(
         FixtureResult(name=fixture.name, score=score_envelope(fixture, envelope, graph))
         for fixture, envelope in cases
     ]
-    aggregate = (
-        0.0 if not results else sum(result.score.total for result in results) / len(results)
-    )
+    aggregate = 0.0 if not results else sum(result.score.total for result in results) / len(results)
     below = threshold is not None and aggregate < threshold
     code = 1 if below else 0
     if as_json:

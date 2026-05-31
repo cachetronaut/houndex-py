@@ -47,9 +47,7 @@ def build_answer_envelope(
     return OutputEnvelope[dict[str, Any]](
         tenant_id=tenant_id,
         generated_at=generated_at,
-        trace=[
-            TraceEntry(claim_id=claim.claim_id, mechanism="vector_search") for claim in claims
-        ],
+        trace=[TraceEntry(claim_id=claim.claim_id, mechanism="vector_search") for claim in claims],
         payload={
             "query": query,
             "answer": " ".join(claim.claim_text for claim in claims),
