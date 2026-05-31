@@ -103,10 +103,12 @@ Verification in Houndex is evidence-relative. It can tell you whether an answer 
 | Package | Status | Purpose |
 |---|---|---|
 | `houndex-core` | Active | Schemas, output envelopes, claims, evidence, traces, provider ports, storage contracts |
-| `houndex-storage-local` | Planned | Zero-service reference adapter |
-| `houndex-storage-supabase` | Planned | Postgres + pgvector adapter |
-| `houndex-cli` | Planned | `init`, `ingest`, `ask`, `trace`, `eval`, `doctor` |
-| `houndex-evals` | Planned | Regression harness for citation quality and envelope validity |
+| `houndex-pipeline` | Active | Deterministic ingestion/enrichment: chunking, dedupe, source tiering, claim assembly |
+| `houndex-storage-local` | Active | Zero-service in-memory reference adapter |
+| `houndex-storage-supabase` | Active | Postgres + pgvector adapter (HNSW cosine search, RLS) |
+| `houndex-storage-convex` | Active | Convex client adapter (vector index + tenant-scoped search action) |
+| `houndex-evals` | Active | Regression harness: fixture schema, envelope rubric scoring, reports |
+| `houndex-cli` | Active | `init`, `doctor`, `ingest`, `ask`, `verify`, `eval` over a configured adapter |
 
 ## Design principles
 
