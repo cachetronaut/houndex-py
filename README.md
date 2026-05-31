@@ -110,6 +110,40 @@ Verification in Houndex is evidence-relative. It can tell you whether an answer 
 | `houndex-evals` | Active | Regression harness: fixture schema, envelope rubric scoring, reports |
 | `houndex-cli` | Active | `init`, `doctor`, `ingest`, `ask`, `verify`, `eval` over a configured adapter |
 
+The companion TypeScript repository tracks the same contracts. Shared parity
+fixtures keep claim identity, canonical JSON, and the synthetic embedder
+byte-for-byte identical across the two languages.
+
+## Quickstart
+
+The packages are not yet published to PyPI. Run them from a clone of this
+repository.
+
+```bash
+git clone https://github.com/cachetronaut/houndex-py
+cd houndex-py
+uv sync
+uv run pytest
+```
+
+Verify a model answer against an evidence store with the CLI. The CLI reads
+`houndex.config.json` and defaults to an in-memory store, so it needs no
+services:
+
+```bash
+uv run houndex init
+uv run houndex verify answer.json
+```
+
+`verify` checks that the answer envelope is schema-valid and that every cited
+claim resolves to a stored claim. It exits `0` when the answer is grounded, `1`
+when a citation does not resolve or the envelope is invalid, and `2` on an
+operational error such as a missing file. Use the exit code as a CI gate.
+
+In application code, call the same engine in-process on each answer through
+`houndex-evals` (`score_envelope`). The CLI and the library share one engine, so
+their verdicts are identical.
+
 ## Design principles
 
 ### Storage-decoupled
@@ -136,11 +170,25 @@ Houndex is designed for workflows where humans may approve, reject, edit, or ove
 
 Every serious knowledge system needs regression tests. Houndex treats evals as part of the framework, not an afterthought.
 
-## Current status
+## Roadmap
 
-Houndex is early and under active development.
+Houndex is early and under active development. The contracts are stable enough to
+build on; the surface area is still growing.
 
-The first milestone is a clean core with shared contracts across TypeScript and Python, followed by local storage, Supabase storage, basic ingestion, typed output envelopes, and citation verification.
+Shipped, in both TypeScript and Python:
+
+- `core` contracts, the deterministic `pipeline`, three storage adapters
+  (`storage-local`, `storage-supabase`, `storage-convex`), the `evals` harness,
+  and the `cli`.
+
+Planned, in roughly this order:
+
+1. `houndex-connectors` — source connectors that normalize files, web pages,
+   GitHub repositories, and docs into Houndex sources and claims. Planned for
+   both languages.
+2. A Next.js review UI (`surface-next`). It lives in the TypeScript repository
+   only; this repository ships no UI.
+3. Publishing to PyPI, with semantic-versioned releases.
 
 ## Development
 
@@ -154,6 +202,15 @@ uv run ruff format --check .
 uv run ty check
 uv run python scripts/cleanroom_guard.py
 ```
+
+The Supabase and Convex adapters carry live integration tests that are skipped
+unless their environment is configured:
+
+- Supabase: run `supabase start && supabase db reset`, set `SUPABASE_URL` and
+  `SUPABASE_SERVICE_ROLE_KEY`, then run the tests with `PYTHONSAFEPATH=1` (the
+  `supabase/` CLI directory otherwise shadows the installed `supabase` client).
+- Convex: deploy the backend from the TypeScript repository, then set
+  `CONVEX_URL`.
 
 ## License
 
