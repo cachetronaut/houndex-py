@@ -21,7 +21,7 @@ def _fmt(value: float | None) -> str:
 
 
 def format_report(results: Sequence[FixtureResult]) -> str:
-    passed = sum(1 for r in results if r.score.passed)
+    passed = sum(1 for result in results if result.score.passed)
     lines = [
         "# Regression report",
         "",

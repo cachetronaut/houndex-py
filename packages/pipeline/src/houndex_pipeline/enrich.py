@@ -28,15 +28,15 @@ def compute_enrichment(
     semantic_score: float | None = None,
     via_structural_edge: bool = False,
 ) -> Enrichment:
-    incident = [e for e in edges if e.src_id == claim_id or e.dst_id == claim_id]
+    incident = [edge for edge in edges if edge.src_id == claim_id or edge.dst_id == claim_id]
 
     corroboration: dict[str, int] = {}
     for kind in _CORROBORATION_KINDS:
-        count = sum(1 for e in incident if e.kind == kind)
+        count = sum(1 for edge in incident if edge.kind == kind)
         if count > 0:
             corroboration[kind] = count
 
-    contradiction_count = sum(1 for e in incident if e.kind == "contradicts")
+    contradiction_count = sum(1 for edge in incident if edge.kind == "contradicts")
 
     distribution: dict[str, int] = {}
     for edge in incident:
@@ -49,9 +49,9 @@ def compute_enrichment(
 
     return Enrichment.model_validate(
         {
-            "corroboration_count": {k: corroboration[k] for k in sorted(corroboration)},
+            "corroboration_count": {key: corroboration[key] for key in sorted(corroboration)},
             "contradiction_count": contradiction_count,
-            "source_tier_distribution": {k: distribution[k] for k in sorted(distribution)},
+            "source_tier_distribution": {key: distribution[key] for key in sorted(distribution)},
             "source_count": source_count,
             "semantic_score": semantic_score,
             "via_structural_edge": via_structural_edge,

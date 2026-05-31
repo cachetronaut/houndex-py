@@ -121,7 +121,7 @@ async def ask(deps: CommandDeps, *, query: str, limit: int, as_json: bool) -> Co
     lines = [f"answer: {body}"]
     if claims:
         lines.append("citations:")
-        lines.extend(f"  - {c.claim_id}  {c.claim_text}" for c in claims)
+        lines.extend(f"  - {claim.claim_id}  {claim.claim_text}" for claim in claims)
     lines.append(f"verdict: {'PASS' if score.passed else 'FAIL'} (score {score.total:.3f})")
     return CommandResult(0, "\n".join(lines))
 
@@ -159,7 +159,9 @@ async def evaluate(
         FixtureResult(name=fixture.name, score=score_envelope(fixture, envelope, graph))
         for fixture, envelope in cases
     ]
-    aggregate = 0.0 if not results else sum(r.score.total for r in results) / len(results)
+    aggregate = (
+        0.0 if not results else sum(result.score.total for result in results) / len(results)
+    )
     below = threshold is not None and aggregate < threshold
     code = 1 if below else 0
     if as_json:
@@ -169,7 +171,9 @@ async def evaluate(
                 {
                     "aggregate": aggregate,
                     "threshold": threshold,
-                    "results": [{"name": r.name, **_verdict_dict(r.score)} for r in results],
+                    "results": [
+                        {"name": result.name, **_verdict_dict(result.score)} for result in results
+                    ],
                 }
             ),
         )

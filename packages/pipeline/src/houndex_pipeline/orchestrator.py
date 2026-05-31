@@ -103,7 +103,7 @@ async def run_ingestion(input: IngestionInput, deps: IngestionDeps) -> Ingestion
                 deps.on_page_error(url, error)
             return None
 
-    scraped = await asyncio.gather(*(_safe_scrape(r.url) for r in unique))
+    scraped = await asyncio.gather(*(_safe_scrape(source.url) for source in unique))
 
     # Content-hash dedupe runs sequentially so the kept set is deterministic
     # regardless of scrape completion order (identical page text kept once).
@@ -151,9 +151,9 @@ async def run_ingestion(input: IngestionInput, deps: IngestionDeps) -> Ingestion
         result.claims_dropped += len(outcome.dropped)
         return (outcome.kept, embedding)
 
-    for i in range(0, len(pages), concurrency):
-        batch = pages[i : i + concurrency]
-        for outcome in await asyncio.gather(*(_process(p) for p in batch)):
+    for offset in range(0, len(pages), concurrency):
+        batch = pages[offset : offset + concurrency]
+        for outcome in await asyncio.gather(*(_process(page) for page in batch)):
             if outcome is not None:
                 sinkable.append(outcome)
 

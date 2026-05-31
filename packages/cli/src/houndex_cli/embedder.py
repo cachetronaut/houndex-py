@@ -31,9 +31,9 @@ class SyntheticEmbedder:
 
     def embed(self, text: str) -> list[float]:
         state = _fnv1a32(text) or 1
-        vec: list[float] = []
+        vector: list[float] = []
         for _ in range(self.dimensions):
             state = (_LCG_MULT * state + _LCG_INC) & _MASK
-            vec.append(state / _UINT32 * 2 - 1)
-        norm = math.sqrt(sum(x * x for x in vec)) or 1.0
-        return [x / norm for x in vec]
+            vector.append(state / _UINT32 * 2 - 1)
+        norm = math.sqrt(sum(value * value for value in vector)) or 1.0
+        return [value / norm for value in vector]

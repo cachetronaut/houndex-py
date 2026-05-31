@@ -74,11 +74,11 @@ def _now_ms() -> int:
     return int(time.time() * 1000)
 
 
-def _cosine_similarity(a: Sequence[float], b: Sequence[float]) -> float:
-    length = min(len(a), len(b))
-    dot = sum(a[i] * b[i] for i in range(length))
-    norm_a = math.sqrt(sum(x * x for x in a))
-    norm_b = math.sqrt(sum(y * y for y in b))
+def _cosine_similarity(vector_a: Sequence[float], vector_b: Sequence[float]) -> float:
+    length = min(len(vector_a), len(vector_b))
+    dot = sum(vector_a[index] * vector_b[index] for index in range(length))
+    norm_a = math.sqrt(sum(value * value for value in vector_a))
+    norm_b = math.sqrt(sum(value * value for value in vector_b))
     if norm_a == 0 or norm_b == 0:
         return 0.0
     return dot / (norm_a * norm_b)

@@ -47,11 +47,13 @@ def build_answer_envelope(
     return OutputEnvelope[dict[str, Any]](
         tenant_id=tenant_id,
         generated_at=generated_at,
-        trace=[TraceEntry(claim_id=c.claim_id, mechanism="vector_search") for c in claims],
+        trace=[
+            TraceEntry(claim_id=claim.claim_id, mechanism="vector_search") for claim in claims
+        ],
         payload={
             "query": query,
-            "answer": " ".join(c.claim_text for c in claims),
-            "citations": [c.claim_id for c in claims],
+            "answer": " ".join(claim.claim_text for claim in claims),
+            "citations": [claim.claim_id for claim in claims],
         },
     )
 
@@ -74,7 +76,7 @@ async def resolve_graph(
     if claim_ids is not None:
         return GraphState(claim_ids=list(claim_ids))
     claims = await adapter.search_claims(ClaimSearchInput(tenant=tenant))
-    return GraphState(claim_ids=[c.claim_id for c in claims])
+    return GraphState(claim_ids=[claim.claim_id for claim in claims])
 
 
 class VerifyFile(BaseModel):
