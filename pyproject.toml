@@ -1,33 +1,77 @@
-# Virtual uv workspace root. Members are added here as they are implemented;
-# stub package directories are intentionally not yet members.
-[tool.uv.workspace]
-members = [
-    "packages/core",
-    "packages/pipeline",
-    "packages/storage-local",
-    "packages/storage-convex",
-    "packages/storage-supabase",
-    "packages/evals",
-    "packages/cli",
-    "packages/connectors",
-    "packages/surface-api",
+[project]
+name = "houndex"
+version = "0.1.0"
+description = "A storage-decoupled, last-mile RAG framework: typed output envelopes, tenant-aware evidence stores, citation verification, and pluggable storage adapters."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+dependencies = [
+    "pydantic>=2.7",
 ]
 
-[tool.uv.sources]
-houndex-core = { workspace = true }
-houndex-pipeline = { workspace = true }
-houndex-storage-local = { workspace = true }
-houndex-storage-convex = { workspace = true }
-houndex-storage-supabase = { workspace = true }
-houndex-evals = { workspace = true }
-houndex-cli = { workspace = true }
-houndex-connectors = { workspace = true }
-houndex-surface-api = { workspace = true }
+[project.optional-dependencies]
+api = [
+    "fastapi>=0.115",
+    "httpx>=0.28",
+]
+cli = [
+    "typer>=0.12",
+]
+storage-convex = [
+    "convex>=0.6.0",
+]
+storage-supabase = [
+    "supabase>=2.0.0",
+]
+storage = [
+    "convex>=0.6.0",
+    "supabase>=2.0.0",
+]
+all = [
+    "convex>=0.6.0",
+    "fastapi>=0.115",
+    "httpx>=0.28",
+    "supabase>=2.0.0",
+    "typer>=0.12",
+]
+
+[project.scripts]
+houndex = "houndex_cli.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = [
+    "src/houndex",
+    "packages/core/src/houndex_core",
+    "packages/pipeline/src/houndex_pipeline",
+    "packages/storage-local/src/houndex_storage_local",
+    "packages/storage-convex/src/houndex_storage_convex",
+    "packages/storage-supabase/src/houndex_storage_supabase",
+    "packages/evals/src/houndex_evals",
+    "packages/cli/src/houndex_cli",
+    "packages/connectors/src/houndex_connectors",
+    "packages/surface-api/src/houndex_surface_api",
+]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/LICENSE",
+    "/README.md",
+    "/src",
+    "/packages/*/README.md",
+    "/packages/*/src",
+]
 
 [dependency-groups]
 dev = [
+    "fastapi>=0.115",
+    "httpx>=0.28",
     "pytest>=8",
     "ruff>=0.6",
+    "typer>=0.12",
     "ty>=0.0.1a8",
 ]
 
@@ -43,6 +87,7 @@ testpaths = ["packages"]
 
 [tool.ty.environment]
 extra-paths = [
+    "src",
     "packages/core/src",
     "packages/pipeline/src",
     "packages/storage-local/src",

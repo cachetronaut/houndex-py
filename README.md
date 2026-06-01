@@ -102,19 +102,21 @@ Houndex is not:
 
 Verification in Houndex is evidence-relative. It can tell you whether an answer is supported by the available evidence, but it does not magically make weak sources correct.
 
-## Package status
+## Module status
 
-| Package | Status | Purpose |
+`houndex` is published as one Python distribution with optional extras for heavier runtime surfaces.
+
+| Import package | Status | Purpose |
 |---|---|---|
-| `houndex-core` | Active | Schemas, output envelopes, claims, evidence, traces, provider ports, storage contracts |
-| `houndex-pipeline` | Active | Deterministic ingestion/enrichment: chunking, dedupe, source tiering, claim assembly |
-| `houndex-storage-local` | Active | Zero-service in-memory reference adapter |
-| `houndex-storage-supabase` | Active | Postgres + pgvector adapter (HNSW cosine search, RLS) |
-| `houndex-storage-convex` | Active | Convex client adapter (vector index + tenant-scoped search action) |
-| `houndex-evals` | Active | Regression harness: fixture schema, envelope rubric scoring, reports |
-| `houndex-cli` | Active | `init`, `doctor`, `ingest`, `ask`, `verify`, `eval` over a configured adapter |
-| `houndex-connectors` | Active | Deterministic source connectors for files, explicit web URLs, GitHub repositories, and documentation sites |
-| `houndex-surface-api` | Active | Optional FastAPI service exposing verify, ask, and ingest over HTTP |
+| `houndex_core` | Active | Schemas, output envelopes, claims, evidence, traces, provider ports, storage contracts |
+| `houndex_pipeline` | Active | Deterministic ingestion/enrichment: chunking, dedupe, source tiering, claim assembly |
+| `houndex_storage_local` | Active | Zero-service in-memory reference adapter |
+| `houndex_storage_supabase` | Active | Postgres + pgvector adapter (HNSW cosine search, RLS) |
+| `houndex_storage_convex` | Active | Convex client adapter (vector index + tenant-scoped search action) |
+| `houndex_evals` | Active | Regression harness: fixture schema, envelope rubric scoring, reports |
+| `houndex_cli` | Active | `init`, `doctor`, `ingest`, `ask`, `verify`, `eval` over a configured adapter |
+| `houndex_connectors` | Active | Deterministic source connectors for files, explicit web URLs, GitHub repositories, and documentation sites |
+| `houndex_surface_api` | Active | Optional FastAPI service exposing verify, ask, and ingest over HTTP |
 
 The companion TypeScript repository tracks the same contracts. Shared parity
 fixtures keep claim identity, canonical JSON, and the synthetic embedder
@@ -122,8 +124,23 @@ byte-for-byte identical across the two languages.
 
 ## Quickstart
 
-The packages are not yet published to PyPI. Run them from a clone of this
-repository.
+Install the base framework:
+
+```bash
+pip install houndex
+```
+
+Install optional surfaces as needed:
+
+```bash
+pip install "houndex[cli]"
+pip install "houndex[api]"
+pip install "houndex[storage-supabase]"
+pip install "houndex[storage-convex]"
+pip install "houndex[all]"
+```
+
+Run the repo test suite from a clone:
 
 ```bash
 git clone https://github.com/cachetronaut/houndex-py

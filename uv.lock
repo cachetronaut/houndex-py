@@ -2,26 +2,6 @@ version = 1
 revision = 3
 requires-python = ">=3.11"
 
-[manifest]
-members = [
-    "houndex-cli",
-    "houndex-connectors",
-    "houndex-core",
-    "houndex-evals",
-    "houndex-pipeline",
-    "houndex-storage-convex",
-    "houndex-storage-local",
-    "houndex-storage-supabase",
-    "houndex-surface-api",
-]
-
-[manifest.dependency-groups]
-dev = [
-    { name = "pytest", specifier = ">=8" },
-    { name = "ruff", specifier = ">=0.6" },
-    { name = "ty", specifier = ">=0.0.1a8" },
-]
-
 [[package]]
 name = "annotated-doc"
 version = "0.0.4"
@@ -404,157 +384,75 @@ wheels = [
 ]
 
 [[package]]
-name = "houndex-cli"
+name = "houndex"
 version = "0.1.0"
-source = { editable = "packages/cli" }
-dependencies = [
-    { name = "houndex-core" },
-    { name = "houndex-evals" },
-    { name = "houndex-storage-local" },
-    { name = "typer" },
-]
-
-[package.optional-dependencies]
-convex = [
-    { name = "houndex-storage-convex", extra = ["client"] },
-]
-supabase = [
-    { name = "houndex-storage-supabase", extra = ["client"] },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "houndex-core", editable = "packages/core" },
-    { name = "houndex-evals", editable = "packages/evals" },
-    { name = "houndex-storage-convex", extras = ["client"], marker = "extra == 'convex'", editable = "packages/storage-convex" },
-    { name = "houndex-storage-local", editable = "packages/storage-local" },
-    { name = "houndex-storage-supabase", extras = ["client"], marker = "extra == 'supabase'", editable = "packages/storage-supabase" },
-    { name = "typer", specifier = ">=0.12" },
-]
-provides-extras = ["supabase", "convex"]
-
-[[package]]
-name = "houndex-connectors"
-version = "0.1.0"
-source = { editable = "packages/connectors" }
-dependencies = [
-    { name = "houndex-core" },
-    { name = "houndex-pipeline" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "houndex-core", editable = "packages/core" },
-    { name = "houndex-pipeline", editable = "packages/pipeline" },
-]
-
-[[package]]
-name = "houndex-core"
-version = "0.1.0"
-source = { editable = "packages/core" }
+source = { editable = "." }
 dependencies = [
     { name = "pydantic" },
 ]
 
-[package.metadata]
-requires-dist = [{ name = "pydantic", specifier = ">=2.7" }]
-
-[[package]]
-name = "houndex-evals"
-version = "0.1.0"
-source = { editable = "packages/evals" }
-dependencies = [
-    { name = "houndex-core" },
-]
-
-[package.metadata]
-requires-dist = [{ name = "houndex-core", editable = "packages/core" }]
-
-[[package]]
-name = "houndex-pipeline"
-version = "0.1.0"
-source = { editable = "packages/pipeline" }
-dependencies = [
-    { name = "houndex-core" },
-]
-
-[package.metadata]
-requires-dist = [{ name = "houndex-core", editable = "packages/core" }]
-
-[[package]]
-name = "houndex-storage-convex"
-version = "0.1.0"
-source = { editable = "packages/storage-convex" }
-dependencies = [
-    { name = "houndex-core" },
-]
-
 [package.optional-dependencies]
-client = [
+all = [
+    { name = "convex" },
+    { name = "fastapi" },
+    { name = "httpx" },
+    { name = "supabase" },
+    { name = "typer" },
+]
+api = [
+    { name = "fastapi" },
+    { name = "httpx" },
+]
+cli = [
+    { name = "typer" },
+]
+storage = [
+    { name = "convex" },
+    { name = "supabase" },
+]
+storage-convex = [
     { name = "convex" },
 ]
-
-[package.metadata]
-requires-dist = [
-    { name = "convex", marker = "extra == 'client'", specifier = ">=0.6.0" },
-    { name = "houndex-core", editable = "packages/core" },
-]
-provides-extras = ["client"]
-
-[[package]]
-name = "houndex-storage-local"
-version = "0.1.0"
-source = { editable = "packages/storage-local" }
-dependencies = [
-    { name = "houndex-core" },
-]
-
-[package.metadata]
-requires-dist = [{ name = "houndex-core", editable = "packages/core" }]
-
-[[package]]
-name = "houndex-storage-supabase"
-version = "0.1.0"
-source = { editable = "packages/storage-supabase" }
-dependencies = [
-    { name = "houndex-core" },
-]
-
-[package.optional-dependencies]
-client = [
+storage-supabase = [
     { name = "supabase" },
 ]
 
-[package.metadata]
-requires-dist = [
-    { name = "houndex-core", editable = "packages/core" },
-    { name = "supabase", marker = "extra == 'client'", specifier = ">=2.0.0" },
-]
-provides-extras = ["client"]
-
-[[package]]
-name = "houndex-surface-api"
-version = "0.1.0"
-source = { editable = "packages/surface-api" }
-dependencies = [
+[package.dev-dependencies]
+dev = [
     { name = "fastapi" },
-    { name = "houndex-cli" },
-    { name = "houndex-connectors" },
-    { name = "houndex-core" },
-    { name = "houndex-pipeline" },
-    { name = "houndex-storage-local" },
     { name = "httpx" },
+    { name = "pytest" },
+    { name = "ruff" },
+    { name = "ty" },
+    { name = "typer" },
 ]
 
 [package.metadata]
 requires-dist = [
+    { name = "convex", marker = "extra == 'all'", specifier = ">=0.6.0" },
+    { name = "convex", marker = "extra == 'storage'", specifier = ">=0.6.0" },
+    { name = "convex", marker = "extra == 'storage-convex'", specifier = ">=0.6.0" },
+    { name = "fastapi", marker = "extra == 'all'", specifier = ">=0.115" },
+    { name = "fastapi", marker = "extra == 'api'", specifier = ">=0.115" },
+    { name = "httpx", marker = "extra == 'all'", specifier = ">=0.28" },
+    { name = "httpx", marker = "extra == 'api'", specifier = ">=0.28" },
+    { name = "pydantic", specifier = ">=2.7" },
+    { name = "supabase", marker = "extra == 'all'", specifier = ">=2.0.0" },
+    { name = "supabase", marker = "extra == 'storage'", specifier = ">=2.0.0" },
+    { name = "supabase", marker = "extra == 'storage-supabase'", specifier = ">=2.0.0" },
+    { name = "typer", marker = "extra == 'all'", specifier = ">=0.12" },
+    { name = "typer", marker = "extra == 'cli'", specifier = ">=0.12" },
+]
+provides-extras = ["api", "cli", "storage-convex", "storage-supabase", "storage", "all"]
+
+[package.metadata.requires-dev]
+dev = [
     { name = "fastapi", specifier = ">=0.115" },
-    { name = "houndex-cli", editable = "packages/cli" },
-    { name = "houndex-connectors", editable = "packages/connectors" },
-    { name = "houndex-core", editable = "packages/core" },
-    { name = "houndex-pipeline", editable = "packages/pipeline" },
-    { name = "houndex-storage-local", editable = "packages/storage-local" },
     { name = "httpx", specifier = ">=0.28" },
+    { name = "pytest", specifier = ">=8" },
+    { name = "ruff", specifier = ">=0.6" },
+    { name = "ty", specifier = ">=0.0.1a8" },
+    { name = "typer", specifier = ">=0.12" },
 ]
 
 [[package]]

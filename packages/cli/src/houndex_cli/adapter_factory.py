@@ -56,6 +56,7 @@ def _import(module: str, adapter: str) -> ModuleType:
     try:
         return importlib.import_module(module)
     except ImportError as err:
+        extra = f"storage-{adapter}"
         raise RuntimeError(
-            f"the '{adapter}' adapter needs houndex-storage-{adapter}[client] installed"
+            f"the '{adapter}' adapter needs the '{extra}' extra: pip install 'houndex[{extra}]'"
         ) from err

@@ -12,7 +12,12 @@ import os
 from pathlib import Path
 from typing import Annotated
 
-import typer
+try:
+    import typer
+except ImportError as err:  # pragma: no cover - exercised only in minimal installs
+    raise RuntimeError(
+        "the houndex command needs the 'cli' extra: pip install 'houndex[cli]'"
+    ) from err
 
 from . import commands as cmd
 from .adapter_factory import create_adapter
