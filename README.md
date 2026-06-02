@@ -1,7 +1,7 @@
 # Houndex Python
 
 <p align="center">
-  <img src="./docs/assets/houndex-banner.png" alt="Houndex logo"/>
+    <img src="./docs/assets/houndex-banner.png" alt="Houndex logo" height="500px"/>
 </p>
 
 **Houndex is a last-mile knowledge framework for building source-backed AI systems.**
