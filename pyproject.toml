@@ -1,6 +1,6 @@
 [project]
 name = "houndex"
-version = "0.1.1"
+version = "0.1.2"
 description = "A storage-decoupled, last-mile RAG framework: typed output envelopes, tenant-aware evidence stores, citation verification, and pluggable storage adapters."
 readme = "README.md"
 requires-python = ">=3.11"
